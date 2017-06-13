@@ -1,0 +1,17 @@
+#Some utils for working with standard output
+tr -s ' ' #--> clean multiple spaces
+tr -s ' ' ':' #--> change delimiter to :
+xargs -I {} echo {} {} #--> twice echo
+awk 'print $1 ":" $2' #--> print fields intercalated with :
+cut -f1,2 -d ' ' #--> another way of printing fields
+grep -v '^something' #--> inverse match grep that starts with something
+
+#delete unamed images
+docker images | grep '<none>' | tr -s ' ' | cut -f 3 -d ' ' | xargs docker rmi
+
+#delete stopped containers
+docker ps -a | tr -s ' ' | cut -f 1 -d ' ' | xargs docker rm
+
+#update Python packages
+pip3 freeze --local | grep -v '^\-e' | awk -F '=' '{print $1}' | tr '\n' ' ' | xargs pip3 install -U --user
+pip2 freeze --local | grep -v '^\-e' | awk -F '=' '{print $1}' | tr '\n' ' ' | xargs pip2 install -U --user
