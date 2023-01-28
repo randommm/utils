@@ -11,11 +11,16 @@ secret="your_secret_here"
 domain="domain.com"
 subdomain="subdomainname"
 
+myip=`dig -4 TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}' | tr -d "\r\n"`
+#Alternatives:
+#myip=`curl https://4.ifcfg.me/ | tr -d "\r\n"`
+#myip=`external-ip | tr -d "\n"`
+
 if [ "x$@" = "x" ]
 then
 curl -X PUT -H "Authorization: sso-key ${key}:${secret}" \
      -H "Content-Type: application/json" -H "Accept: application/json" \
-     -d "[{\"data\":\"`external-ip | tr -d "\n"`\", \"ttl\": 600}]" \
+     -d "[{\"data\":\"${myip}\", \"ttl\": 600}]" \
      "https://api.godaddy.com/v1/domains/${domain}/records/A/${subdomain}"
 elif [ $@ = "delete" ] || [ $@ = "del" ]
 then
