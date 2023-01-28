@@ -15,3 +15,21 @@ docker ps -a | tr -s ' ' | cut -f 1 -d ' ' | xargs docker rm
 #update Python packages
 pip3 freeze --local | grep -v '^\-e' | awk -F '=' '{print $1}' | tr '\n' ' ' | xargs pip3 install -U --user
 pip2 freeze --local | grep -v '^\-e' | awk -F '=' '{print $1}' | tr '\n' ' ' | xargs pip2 install -U --user
+
+#cgroup commands
+cgcreate -g memory:limited
+cgset -r memory.limit_in_bytes=2G limited
+ps -e | grep "python" | xargs -I {} echo ' {}' | cut -f2 -d " " | sudo xargs cgclassify -g memory:limited
+sudo cgexec -g memory:limited su marco
+
+sudo cgcreate -g cpu:gpA
+sudo cgcreate -g memory,cpu:gpA
+cgget -r cpu.shares gpA
+sudo cgset -r cpu.shares=512 gpA
+
+#use 0.4 second out of 1 second
+sudo cgset -r cpu.cfs_quota_us=400000 gpA
+sudo cgset -r cpu.cfs_period_us=1000000 gpA
+
+#Classify all processes and threads containing "jupyter" on name to group gpA
+ps -eT | grep "jupyter" | xargs -I {} echo ' {}' | cut -f2 -d " " | sudo xargs cgclassify -g cpu:gpA
